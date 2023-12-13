@@ -1,0 +1,17 @@
+[package]
+name = "crabpulsar"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.35.0", features = [ "full" ] }
+gtk-layer-shell = "0.8.0"
+gtk = "0.18.1"
+hyprland = "0.3.12"
+glib = "0.18.4"
+config = "0.13.4"
+chrono = "0.4.31"
+turf = "0.7.0"
+anyhow = "1.0.75"

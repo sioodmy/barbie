@@ -1,0 +1,70 @@
+$base: #1e1e2e;
+$mantle: #181825;
+$surface0: #313244;
+$green: #a6e3a1;
+$blue: #89b4fa;
+$yellow: #f9e2af;
+$text: #cdd6f4;
+
+* {
+  font-size: 12px;
+  font-family: "Iosevka Nerd Font";
+  padding: 0;
+  margin: 0;
+}
+
+button {
+  background: none;
+}
+
+button:hover {
+  background: none;
+}
+box{
+  padding: 2px 0;
+}
+#widget {
+  background: $base;
+  border-radius: 7px;
+  padding: 0px 10px;
+  margin: -2px 2px;
+}
+#widget-nobg{
+  padding: 0px 10px;
+  margin: -2px 2px;  
+}
+label{
+  color: $text;
+}
+
+levelbar {
+  border-radius: 10px;
+}
+
+#workspace-button label {
+  color: $blue;
+}
+#workspace-button-active label {
+  color: $yellow;
+}
+#battery {
+  color: $green;
+}
+
+#brightness {
+  color: $yellow;
+}
+
+#search label {
+  color: $blue;
+  font-size: 14px;
+}
+#search {
+  margin: -2px 0;
+}
+
+#clock {
+  font-family: "Iosevka Term";
+  font-weight: 700;
+
+}
