@@ -2,6 +2,9 @@ $base: #1e1e2e;
 $mantle: #181825;
 $surface0: #313244;
 $green: #a6e3a1;
+$peach: #fab387;
+$mauve: #cba6f7;
+$red: #f38ba8;
 $blue: #89b4fa;
 $yellow: #f9e2af;
 $text: #cdd6f4;
@@ -19,6 +22,9 @@ button {
 
 button:hover {
   background: none;
+  box-shadow: inherit;
+  text-shadow: inherit;
+
 }
 box{
   padding: 2px 0;
@@ -41,6 +47,14 @@ levelbar {
   border-radius: 10px;
 }
 
+#cpu {
+  color: $peach;
+}
+
+#mem {
+  color: $yellow;
+}
+
 #workspace-button label {
   color: $blue;
 }
@@ -51,6 +65,10 @@ levelbar {
   color: $green;
 }
 
+#power label {
+  color: $red;
+}
+
 #brightness {
   color: $yellow;
 }
@@ -59,6 +77,8 @@ levelbar {
   color: $blue;
   font-size: 14px;
 }
+
+#power,
 #search {
   margin: -2px 0;
 }

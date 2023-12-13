@@ -1,9 +1,11 @@
 use anyhow::Result;
+use crossbeam_channel::unbounded;
 use glib::*;
 use gtk::{traits::*, *};
-use hyprland::data::Workspace;
 use hyprland::dispatch::*;
-use hyprland::prelude::*;
+use hyprland::event_listener::*;
+use hyprland::shared::WorkspaceType;
+use std::thread;
 
 use super::widget;
 
@@ -18,6 +20,14 @@ fn switch_to_workspace(id: i32) {
 
 pub fn add_widget(pos: &Box) -> Result<()> {
     // let icons = ["󰪃", "󰩾", "󰪁", "󰪂", "󰪇", "󰪆", "󰩽", "󰩿", "󰪄", "󰪈"];
+    let main_context = glib::MainContext::default();
+    // ... and make it the main context by default so that we can then have a channel to send the
+    // commands we received from the terminal.
+    let _guard = main_context.acquire().unwrap();
+
+    // Build the channel to get the terminal inputs from a different thread.
+    let (tx, rx) = unbounded::<String>();
+
     let icons = ["󰪃", "󰩾", "󰪁", "󰪂", "󰪇"];
     let widgetbox = widget();
     pos.add(&widgetbox);
@@ -32,17 +42,31 @@ pub fn add_widget(pos: &Box) -> Result<()> {
         workspace_buttons.push(button);
     }
 
-    let update = move || {
-        let id = Workspace::get_active().unwrap().id;
-        if active != id {
-            workspace_buttons[active as usize - 1].set_widget_name("workspace-button");
+    let tick = move || {
+        if let Ok(workspace) = rx.recv() {
+            let id = workspace
+                .parse::<i32>()
+                .expect("we assumed workspace name is same as id");
+            if active != id {
+                workspace_buttons[active as usize - 1].set_widget_name("workspace-button");
+            }
+            active = id;
+            workspace_buttons[id as usize - 1].set_widget_name("workspace-button-active");
         }
-        active = id;
-        workspace_buttons[id as usize - 1].set_widget_name("workspace-button-active");
         ControlFlow::Continue
     };
 
-    glib::timeout_add_seconds_local(1, update);
+    thread::spawn(move || {
+        let mut listener = EventListener::new();
+        listener.add_workspace_change_handler(move |data| {
+            if let WorkspaceType::Regular(workspace) = data {
+                tx.send(workspace).unwrap();
+            }
+        });
+        listener.start_listener().unwrap();
+    });
+
+    glib::idle_add_local(tick);
 
     Ok(())
 }
