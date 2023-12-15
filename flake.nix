@@ -9,26 +9,34 @@
     };
   };
 
-  outputs = inputs@{ flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
+  outputs = inputs @ {flake-parts, ...}:
+    flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [
         # To import a flake module
         # 1. Add foo to inputs
         # 2. Add foo as a parameter to the outputs function
         # 3. Add here: foo.flakeModule
-
       ];
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      perSystem = { config, self', inputs', pkgs, system, ... }: 
-      {
+      systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+      perSystem = {
+        config,
+        self',
+        inputs',
+        pkgs,
+        system,
+        ...
+      }: {
         # Per-system attributes can be defined here. The self' and inputs'
         # module parameters provide easy access to attributes of the same
         # system.
 
         # Equivalent to  inputs'.nixpkgs.legacyPackages.hello;
+        formatter = pkgs.alejandra;
+
         packages.default = pkgs.hello;
+
         devShells.default = let
-         libs = with pkgs; [
+          libs = with pkgs; [
             openssl
             gtk-layer-shell
             gtk3
@@ -36,23 +44,25 @@
             pkg-config
             gdk-pixbuf
             pango
-        ];
-        
-        in pkgs.mkShell {
-          buildInputs = with pkgs; [
-            inputs.fenix.packages.${system}.complete.toolchain          
-            clippy
-            rustc
-          ] ++ libs; 
-          
-          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
-        };
+          ];
+        in
+          pkgs.mkShell {
+            RUST_LOG = "info";
+            buildInputs = with pkgs;
+              [
+                inputs.fenix.packages.${system}.complete.toolchain
+                clippy
+                rustc
+              ]
+              ++ libs;
+
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
+          };
       };
       flake = {
         # The usual flake attributes can be defined here, including system-
         # agnostic ones like nixosModule and system-enumerating ones, although
         # those are more easily expressed in perSystem.
-
       };
     };
 }

@@ -1,5 +1,6 @@
 use gtk::traits::*;
 use gtk::*;
+use log::warn;
 
 use crate::widgets::*;
 
@@ -17,15 +18,15 @@ pub fn display_widgets(window: &ApplicationWindow) {
     search::add_widget(&left);
     match hyprland::add_widget(&left) {
         Ok(_) => (),
-        Err(_) => eprintln!("couldnt load hyprland module"),
+        Err(_) => warn!("couldnt load hyprland module"),
     }
     match battery::add_widget(&left) {
         Ok(_) => (),
-        Err(_) => eprintln!("couldnt load battery module"),
+        Err(_) => warn!("couldnt load battery module"),
     }
     match brightness::add_widget(&left) {
         Ok(_) => (),
-        Err(_) => eprintln!("couldnt load brightness module"),
+        Err(_) => warn!("couldnt load brightness module"),
     }
     sys::add_widget(&right);
     clock::add_widget(&right);

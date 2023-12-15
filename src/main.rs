@@ -5,37 +5,20 @@ use gtk::prelude::*;
 
 use gtk::*;
 use gtk_layer_shell::{Edge, Layer, LayerShell};
+use log::info;
 
 mod ui;
 mod widgets;
 
-fn get_anchors() -> [(gtk_layer_shell::Edge, bool); 4] {
-    let expand_left = true;
-    let expand_right = true;
-
-    // If the position was valid, return the result.
-    [
-        (Edge::Left, expand_left),
-        (Edge::Right, expand_right),
-        (Edge::Top, true),
-        (Edge::Bottom, false),
-    ]
-}
-
-// Builds all of the widgets.
 pub fn build_widgets(window: &ApplicationWindow) {
-    // Create box widgets, which we'll be using to draw the content onto.
+    info!("Initializing widgets");
     let root = Box::new(Orientation::Horizontal, 0);
     let left = Box::new(Orientation::Horizontal, 0);
     let centered = Box::new(Orientation::Horizontal, 0);
     let right = Box::new(Orientation::Horizontal, 0);
 
-    // 0.2.5: Root expands across the entire bar, previously "left" would do this but it isn't
-    //   ideal when customizing, since borders would draw on the entire bar rather than just on the
-    //   left portion of the bar.
     root.set_widget_name("root");
 
-    // 0.2.5: Allow for customizing left, centered and right.
     left.set_widget_name("left");
     centered.set_widget_name("centered");
     right.set_widget_name("right");
@@ -45,10 +28,7 @@ pub fn build_widgets(window: &ApplicationWindow) {
     root.add(&left);
     window.add(&root);
 
-    // Prepare and show all of the widgets.
     window.show_all();
-
-    // Update dynamic content.
 }
 
 /// Initializes the status bar.
@@ -64,7 +44,13 @@ fn activate(application: &Application) {
     let display = Display::default().expect("couldnt get display");
     let monitor = display.monitor(0).expect("couldnt get monitor");
 
-    for (anchor, state) in get_anchors() {
+    let anchors = [
+        (Edge::Left, true),
+        (Edge::Right, true),
+        (Edge::Top, true),
+        (Edge::Bottom, false),
+    ];
+    for (anchor, state) in anchors {
         LayerShell::set_anchor(&window, anchor, state);
     }
 
@@ -118,6 +104,16 @@ fn load_scss() {
 
 #[tokio::main]
 async fn main() {
+    pretty_env_logger::init();
+    info!("Starting CrabPulsar");
+
+    color_eyre::config::HookBuilder::default()
+        .display_location_section(false)
+        .panic_section("something broke :3")
+        .display_env_section(false)
+        .install()
+        .unwrap();
+
     let app = Application::builder()
         .application_id("dev.sioodmy.crabpulsar")
         .build();

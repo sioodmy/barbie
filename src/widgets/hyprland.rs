@@ -9,7 +9,7 @@ use hyprland::prelude::*;
 use super::widget;
 
 const WORKSPACES: usize = 5;
-const SEPARATOR: &str = "  ";
+const SEPARATOR: &str = "   ";
 
 struct WorkspacesData {
     icons: [String; WORKSPACES],
@@ -17,12 +17,12 @@ struct WorkspacesData {
 }
 
 impl WorkspacesData {
-    fn get_active() -> Result<i32> {
-        Ok(Workspace::get_active()?.id)
-    }
     fn gen_markup(&self) -> String {
         let mut markup = String::new();
         for (i, icon) in self.icons.iter().enumerate() {
+            if i != 0 {
+                markup.push_str(SEPARATOR);
+            }
             markup.push_str(if self.active as usize == i + 1 {
                 "<span color = \"#f9e2af\">"
             } else {
@@ -30,7 +30,6 @@ impl WorkspacesData {
             });
             markup.push_str(icon);
             markup.push_str("</span>");
-            markup.push_str(SEPARATOR);
         }
 
         markup
@@ -50,6 +49,7 @@ pub fn add_widget(pos: &Box) -> Result<()> {
     };
 
     label.set_markup(&wdata.gen_markup());
+    label.set_widget_name("hyprland");
     widgetbox.add(&label);
 
     gio::spawn_blocking(move || {
@@ -62,7 +62,9 @@ pub fn add_widget(pos: &Box) -> Result<()> {
 
     glib::spawn_future_local(clone!(@weak label=> async move {
         while (receiver.recv().await).is_ok() {
-            wdata.active = WorkspacesData::get_active().unwrap();
+            wdata.active =
+                Workspace::get_active()
+                .expect("couldnt get active workspace").id;
             label.set_markup(&wdata.gen_markup());
         }
     }));
