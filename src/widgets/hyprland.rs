@@ -56,7 +56,6 @@ pub fn add_widget(pos: &Box) -> Result<()> {
         let mut listener = EventListener::new();
         listener.add_workspace_change_handler(move |_| {
             sender.send_blocking(()).unwrap();
-            println!("sssadf");
         });
         listener.start_listener().unwrap();
     });
