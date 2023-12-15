@@ -25,9 +25,12 @@ fn get_battery() -> Result<String> {
     .to_owned();
     let status = fs::read_to_string("/sys/class/power_supply/BAT0/status")?;
 
-    if status.trim().eq_ignore_ascii_case("Charging") {
-        icon += " 󰚥";
+    match status.trim() {
+        "Charging" => icon += " 󰚥",
+        "Not charging" => icon += " 󰻹",
+        _ => (),
     }
+
     Ok(format!("{} {}%", icon, cap))
 }
 pub fn add_widget(pos: &Box) -> Result<()> {

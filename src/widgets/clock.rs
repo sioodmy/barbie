@@ -4,13 +4,13 @@ use gtk::{traits::*, *};
 use super::widget;
 
 fn current_time() -> String {
-    format!("{}", Local::now().format("%H:%M:%S"))
+    format!("{}", Local::now().format("%H:%M"))
 }
 
 pub fn add_widget(pos: &Box) {
     let widgetbox = widget();
     pos.add(&widgetbox);
-    let clock = Label::new(Some("21:37"));
+    let clock = Label::new(None);
 
     clock.set_widget_name("clock");
     widgetbox.add(&clock);

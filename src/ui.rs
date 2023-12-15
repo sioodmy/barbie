@@ -28,6 +28,7 @@ pub fn display_widgets(window: &ApplicationWindow) {
         Ok(_) => (),
         Err(_) => warn!("couldnt load brightness module"),
     }
+    weather::add_widget(&right);
     sys::add_widget(&right);
     clock::add_widget(&right);
     power::add_widget(&right);

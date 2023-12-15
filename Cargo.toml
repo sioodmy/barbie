@@ -13,6 +13,7 @@ lto = "fat"
 
 [dependencies]
 tokio = { version = "1.35.0", features = [ "full" ] }
+reqwest = { version = "0.11.22", features = ["blocking"] }
 gtk-layer-shell = "0.8.0"
 gtk = "0.18.1"
 hyprland = "0.3.12"
