@@ -3,20 +3,26 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
-  outputs = inputs @ {flake-parts, ...}:
+  outputs = inputs @ {flake-parts, self, ...}:
     flake-parts.lib.mkFlake {inherit inputs;} {
-      imports = [
-        # To import a flake module
-        # 1. Add foo to inputs
-        # 2. Add foo as a parameter to the outputs function
-        # 3. Add here: foo.flakeModule
-      ];
       systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
       perSystem = {
         config,
@@ -25,44 +31,50 @@
         pkgs,
         system,
         ...
-      }: {
-        # Per-system attributes can be defined here. The self' and inputs'
-        # module parameters provide easy access to attributes of the same
-        # system.
-
-        # Equivalent to  inputs'.nixpkgs.legacyPackages.hello;
+      }: let
+        libs = with pkgs; [
+          openssl
+          gtk-layer-shell
+          gtk3
+          wayland
+          pkg-config
+          gdk-pixbuf
+          pango
+        ];
+      in {
         formatter = pkgs.alejandra;
 
-        packages.default = pkgs.hello;
-
-        devShells.default = let
-          libs = with pkgs; [
-            openssl
-            gtk-layer-shell
-            gtk3
-            wayland
-            pkg-config
-            gdk-pixbuf
-            pango
-          ];
+        packages.default = let
+          craneLib =
+            inputs.crane.lib.${system}.overrideToolchain
+            inputs.fenix.packages.${system}.minimal.toolchain;
         in
-          pkgs.mkShell {
-            RUST_LOG = "info";
-            buildInputs = with pkgs;
-              [
-                inputs.fenix.packages.${system}.complete.toolchain
-                clippy
-                rustc
-              ]
-              ++ libs;
-
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
+          craneLib.buildPackage {
+            src = ./.;
+            buildInputs = libs;
           };
+
+
+        
+        devShells.default = pkgs.mkShell {
+          RUST_LOG = "info";
+          buildInputs = with pkgs;
+            [
+              inputs.fenix.packages.${system}.complete.toolchain
+              clippy
+              rustc
+            ]
+            ++ libs;
+
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath libs;
+        };
       };
       flake = {
-        # The usual flake attributes can be defined here, including system-
-        # agnostic ones like nixosModule and system-enumerating ones, although
-        # those are more easily expressed in perSystem.
+        homeManagerModule = self.homeManagerModules.crabpulsar ; # an alias to the default module
+        homeManagerModules = rec {
+          crabpulsar = import ./hmModule.nix inputs.self;
+          default = crabpulsar;
+        };
       };
     };
 }
