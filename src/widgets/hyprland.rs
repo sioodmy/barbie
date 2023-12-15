@@ -8,10 +8,6 @@ use hyprland::prelude::*;
 
 use super::widget;
 
-// TODO: rewrite all of this
-// yandere dev type shit, but it works
-// (for now)
-
 const WORKSPACES: usize = 5;
 const SEPARATOR: &str = "  ";
 
@@ -42,7 +38,6 @@ impl WorkspacesData {
 }
 
 pub fn add_widget(pos: &Box) -> Result<()> {
-    // let icons = ["󰪃", "󰩾", "󰪁", "󰪂", "󰪇", "󰪆", "󰩽", "󰩿", "󰪄", "󰪈"];
     let widgetbox = widget();
     pos.add(&widgetbox);
 
