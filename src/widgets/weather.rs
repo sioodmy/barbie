@@ -7,8 +7,8 @@ use std::{thread, time::Duration};
 
 use super::widget;
 
-const URL: &'static str = "http://wttr.in?format=%c+%t";
-const INTERVAL: u64 = 2;
+const URL: &str = "http://wttr.in?format=%c+%t";
+const INTERVAL: u64 = 600;
 
 pub fn add_widget(pos: &Box) {
     let widgetbox = widget();
@@ -19,7 +19,7 @@ pub fn add_widget(pos: &Box) {
 
     let (sender, receiver) = async_channel::unbounded::<Result<String, reqwest::Error>>();
 
-    gio::spawn_blocking(move || {
+    gio::spawn_blocking(move || loop {
         let request = get_weather();
         sender.send_blocking(request).unwrap();
         thread::sleep(Duration::from_secs(INTERVAL));
