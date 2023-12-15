@@ -30,6 +30,7 @@ pub fn display_widgets(window: &ApplicationWindow) {
     }
     weather::add_widget(&right);
     sys::add_widget(&right);
+    // volume::add_widget(&right);
     clock::add_widget(&right);
     power::add_widget(&right);
 

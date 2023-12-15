@@ -7,6 +7,7 @@ pub mod hyprland;
 pub mod power;
 pub mod search;
 pub mod sys;
+pub mod volume;
 pub mod weather;
 
 pub fn widget() -> Box {
