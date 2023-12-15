@@ -1,11 +1,10 @@
 use anyhow::Result;
-use crossbeam_channel::unbounded;
 use glib::*;
 use gtk::{traits::*, *};
-use hyprland::dispatch::*;
+use hyprland::data::Workspace;
+
 use hyprland::event_listener::*;
-use hyprland::shared::WorkspaceType;
-use std::thread;
+use hyprland::prelude::*;
 
 use super::widget;
 
@@ -13,60 +12,66 @@ use super::widget;
 // yandere dev type shit, but it works
 // (for now)
 
-fn switch_to_workspace(id: i32) {
-    hyprland::dispatch!(Workspace, WorkspaceIdentifierWithSpecial::Id(id))
-        .expect("Couldn't switch to workspace");
+const WORKSPACES: usize = 5;
+const SEPARATOR: &str = "  ";
+
+struct WorkspacesData {
+    icons: [String; WORKSPACES],
+    active: i32,
+}
+
+impl WorkspacesData {
+    fn get_active() -> Result<i32> {
+        Ok(Workspace::get_active()?.id)
+    }
+    fn gen_markup(&self) -> String {
+        let mut markup = String::new();
+        for (i, icon) in self.icons.iter().enumerate() {
+            markup.push_str(if self.active as usize == i + 1 {
+                "<span color = \"#f9e2af\">"
+            } else {
+                "<span color = \"#89b4fa\">"
+            });
+            markup.push_str(icon);
+            markup.push_str("</span>");
+            markup.push_str(SEPARATOR);
+        }
+
+        markup
+    }
 }
 
 pub fn add_widget(pos: &Box) -> Result<()> {
     // let icons = ["󰪃", "󰩾", "󰪁", "󰪂", "󰪇", "󰪆", "󰩽", "󰩿", "󰪄", "󰪈"];
-    let main_context = glib::MainContext::default();
-    // ... and make it the main context by default so that we can then have a channel to send the
-    // commands we received from the terminal.
-    let _guard = main_context.acquire().unwrap();
-
-    // Build the channel to get the terminal inputs from a different thread.
-    let (tx, rx) = unbounded::<String>();
-
-    let icons = ["󰪃", "󰩾", "󰪁", "󰪂", "󰪇"];
     let widgetbox = widget();
     pos.add(&widgetbox);
-    let mut workspace_buttons = Vec::new();
-    let mut active: i32 = 1;
 
-    for (i, icon) in icons.iter().enumerate() {
-        let button = Button::with_label(icon);
-        button.connect_clicked(move |_| switch_to_workspace(i as i32 + 1));
-        button.set_widget_name("workspace-button");
-        widgetbox.add(&button);
-        workspace_buttons.push(button);
-    }
+    let (sender, receiver) = async_channel::unbounded::<()>();
 
-    let tick = move || {
-        if let Ok(workspace) = rx.recv() {
-            let id = workspace
-                .parse::<i32>()
-                .expect("we assumed workspace name is same as id");
-            if active != id {
-                workspace_buttons[active as usize - 1].set_widget_name("workspace-button");
-            }
-            active = id;
-            workspace_buttons[id as usize - 1].set_widget_name("workspace-button-active");
-        }
-        ControlFlow::Continue
+    let label = Label::new(None);
+    let mut wdata = WorkspacesData {
+        icons: ["󰪃".into(), "󰩾".into(), "󰪁".into(), "󰪂".into(), "󰪇".into()],
+        active: 1,
     };
 
-    thread::spawn(move || {
+    label.set_markup(&wdata.gen_markup());
+    widgetbox.add(&label);
+
+    gio::spawn_blocking(move || {
         let mut listener = EventListener::new();
-        listener.add_workspace_change_handler(move |data| {
-            if let WorkspaceType::Regular(workspace) = data {
-                tx.send(workspace).unwrap();
-            }
+        listener.add_workspace_change_handler(move |_| {
+            sender.send_blocking(()).unwrap();
+            println!("sssadf");
         });
         listener.start_listener().unwrap();
     });
 
-    glib::idle_add_local(tick);
+    glib::spawn_future_local(clone!(@weak label=> async move {
+        while (receiver.recv().await).is_ok() {
+            wdata.active = WorkspacesData::get_active().unwrap();
+            label.set_markup(&wdata.gen_markup());
+        }
+    }));
 
     Ok(())
 }
