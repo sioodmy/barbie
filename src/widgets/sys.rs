@@ -1,6 +1,8 @@
 use anyhow::Result;
+use core::f32;
 use glib::*;
 use gtk::{traits::*, *};
+use rand::prelude::SliceRandom;
 use std::thread;
 use std::time::Duration;
 use systemstat::{Platform, System};
@@ -9,20 +11,36 @@ use super::widget;
 
 type Stats = (f32, f32);
 
-pub fn add_widget(pos: &Box) {
+macro_rules! pick {
+    ($($x:expr),+ $(,)?) => {
+        vec![$($x),+].choose(&mut rand::thread_rng()).unwrap()
+    };
+}
+fn tamagotchi(cpu: f32) -> String {
+    match cpu as i32 {
+        0..=10 => pick!("( ◕‿◕)", "(◕‿◕ )", "(≧◡≦)"),
+        // 0..=10 => ,
+        11..=20 => "(◕‿◕)",
+        21..=30 => "(• ᴗ •)",
+        31..=50 => "(￣︿￣)",
+        51..=80 => "(︶︹︺)",
+        81..=101 => "(☓‿‿☓)",
+        _ => "a",
+    }
+    .to_string()
+}
+
+pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
 
-    let cpulabel = Label::new(None);
-    cpulabel.set_widget_name("cpu");
+    let face = Label::new(None);
+    face.set_widget_name("face");
+    face.set_width_request(74);
 
-    let memlabel = Label::new(None);
-    memlabel.set_widget_name("mem");
+    let (sender, receiver) = async_channel::unbounded::<f32>();
 
-    let (sender, receiver) = async_channel::unbounded::<Stats>();
-
-    widgetbox.add(&cpulabel);
-    widgetbox.add(&memlabel);
+    widgetbox.add(&face);
 
     gio::spawn_blocking(move || loop {
         sender
@@ -31,16 +49,16 @@ pub fn add_widget(pos: &Box) {
         thread::sleep(Duration::from_secs(3));
     });
 
-    glib::spawn_future_local(clone!(@weak cpulabel, @weak memlabel=> async move {
-        while let Ok((cpu, mem)) = receiver.recv().await {
-            cpulabel.set_label(&format!("  {:.2}%", cpu));
-            memlabel.set_label(&format!("  {:.2}%", mem));
+    glib::spawn_future_local(clone!(@weak face=> async move {
+        while let Ok(cpu) = receiver.recv().await {
+            face.set_label(&tamagotchi(cpu));
 
         }
     }));
+    Ok(())
 }
 
-fn get_stats() -> Result<Stats> {
+fn get_stats() -> Result<f32> {
     let sys = System::new();
 
     let cpu = sys.cpu_load_aggregate()?;
@@ -48,9 +66,5 @@ fn get_stats() -> Result<Stats> {
     thread::sleep(Duration::from_secs(1));
     let cpu = cpu.done().unwrap();
 
-    let mem = sys.memory()?;
-    let mem_percent =
-        (mem.total.as_u64() - mem.free.as_u64()) as f32 / mem.total.as_u64() as f32 * 100.;
-
-    Ok((cpu.user * 100., mem_percent))
+    Ok(cpu.user * 100.)
 }

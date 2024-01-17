@@ -2,6 +2,8 @@
 use gtk::gdk::*;
 use gtk::glib::Propagation;
 use gtk::prelude::*;
+use hyprland::keyword::Keyword;
+use hyprland::shared::HResult;
 
 use gtk::*;
 use gtk_layer_shell::{Edge, Layer, LayerShell};
@@ -77,7 +79,7 @@ fn draw(_: &ApplicationWindow, ctx: &cairo::Context) -> Propagation {
     let r = 24. / 255.;
     let g = 24. / 255.;
     let b = 37. / 255.;
-    let a = 0.9;
+    let a = 0.0;
 
     // Apply
     ctx.set_source_rgba(r, g, b, a);

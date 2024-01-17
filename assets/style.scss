@@ -10,34 +10,21 @@ $yellow: #f9e2af;
 $text: #cdd6f4;
 
 * {
-  font-size: 12px;
+  font-size: 15px;
   font-family: "Iosevka Nerd Font";
   padding: 0;
   margin: 0;
 }
 
-button {
-  background: none;
+#barbie {
+  margin: 6px 11px;
 }
 
-button:hover {
-  background: none;
-  box-shadow: inherit;
-  text-shadow: inherit;
-
-}
-box{
-  padding: 2px 0;
-}
 #widget {
   background: $base;
-  border-radius: 7px;
-  padding: 0px 10px;
-  margin: -2px 2px;
-}
-#widget-nobg{
-  padding: 0px 10px;
-  margin: -2px 2px;  
+  border-style: solid;
+  border-color: $surface0;
+  border-width: 0 4px 4px 0;
 }
 label{
   color: $text;
@@ -47,8 +34,8 @@ levelbar {
   border-radius: 10px;
 }
 
-#cpu {
-  color: $peach;
+#face {
+  color: $text;
 }
 
 #mem {
@@ -61,7 +48,7 @@ levelbar {
 }
 
 #battery {
-  color: $green;
+  color: $text;
 }
 
 #power label {
@@ -69,7 +56,7 @@ levelbar {
 }
 
 #brightness {
-  color: $yellow;
+  color: $text;
 }
 
 #search label {

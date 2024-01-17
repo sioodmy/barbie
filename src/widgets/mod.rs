@@ -12,6 +12,5 @@ pub mod weather;
 
 pub fn widget() -> Box {
     let widgetbox = Box::new(Orientation::Horizontal, 0);
-    widgetbox.set_widget_name("widget");
     widgetbox
 }

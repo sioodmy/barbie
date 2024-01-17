@@ -1,3 +1,4 @@
+use anyhow::Result;
 use chrono::Local;
 use gtk::{traits::*, *};
 
@@ -7,7 +8,7 @@ fn current_time() -> String {
     format!("{}", Local::now().format("%H:%M"))
 }
 
-pub fn add_widget(pos: &Box) {
+pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
     let clock = Label::new(None);
@@ -24,4 +25,5 @@ pub fn add_widget(pos: &Box) {
 
     // executes the closure once every second
     glib::timeout_add_seconds_local(1, tick);
+    Ok(())
 }

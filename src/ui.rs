@@ -4,35 +4,35 @@ use log::warn;
 
 use crate::widgets::*;
 
+macro_rules! add {
+    ($widget:ident to $pos:ident) => {
+        match $widget::add_widget(&$pos) {
+            Ok(_) => (),
+            Err(_) => warn!("Couldn't load {} widget", stringify!($widget)),
+        }
+    };
+}
 pub fn display_widgets(window: &ApplicationWindow) {
     let root = Box::new(Orientation::Horizontal, 0);
+    root.set_widget_name("barbie");
 
-    let right = Box::new(Orientation::Horizontal, 0);
-    let left = Box::new(Orientation::Horizontal, 0);
-    let center = Box::new(Orientation::Horizontal, 0);
+    let left = widget();
+    let right = widget();
+
+    left.set_widget_name("widget");
+    right.set_widget_name("widget");
 
     root.add(&left);
-    root.set_center_widget(Some(&center));
     root.pack_end(&right, false, true, 0);
 
-    search::add_widget(&left);
-    match hyprland::add_widget(&left) {
-        Ok(_) => (),
-        Err(_) => warn!("couldnt load hyprland module"),
-    }
-    match battery::add_widget(&left) {
-        Ok(_) => (),
-        Err(_) => warn!("couldnt load battery module"),
-    }
+    add!(hyprland to left);
+    add!(battery to left);
     match brightness::add_widget(&left) {
         Ok(_) => (),
         Err(_) => warn!("couldnt load brightness module"),
     }
-    weather::add_widget(&right);
-    sys::add_widget(&right);
-    // volume::add_widget(&right);
-    clock::add_widget(&right);
-    power::add_widget(&right);
+    add!(sys to right);
+    add!(clock to right);
 
     window.add(&root);
     window.show_all();
