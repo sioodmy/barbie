@@ -1,0 +1,4 @@
+- on top
+- rename everything
+- minify
+- get gaps from hyprland ipc

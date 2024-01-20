@@ -23,50 +23,16 @@ $text: #cdd6f4;
 #widget {
   background: $base;
   border-style: solid;
-  border-color: $surface0;
-  border-width: 0 4px 4px 0;
+  padding: 6px 11px;
+  border-radius: 6px;
 }
+
 label{
   color: $text;
 }
 
-levelbar {
-  border-radius: 10px;
-}
-
 #face {
   color: $text;
-}
-
-#mem {
-  margin-left: 10px;
-  color: $yellow;
-}
-
-#volume {
-  color: $green;
-}
-
-#battery {
-  color: $text;
-}
-
-#power label {
-  color: $red;
-}
-
-#brightness {
-  color: $text;
-}
-
-#search label {
-  color: $blue;
-  font-size: 14px;
-}
-
-#power,
-#search {
-  margin: -2px 0;
 }
 
 #clock {

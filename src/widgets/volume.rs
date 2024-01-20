@@ -7,43 +7,42 @@ use std::time::Duration;
 
 use super::widget;
 
-const MUTE: i8 = -1;
-pub fn add_widget(pos: &Box) {
+enum Volume {
+    Mute,
+    Unmute(i8),
+}
+pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
 
-    let label = Label::new(None);
+    let label = Label::new(Some("vol"));
+    widgetbox.add(&label);
     label.set_widget_name("volume");
 
-    let (sender, receiver) = async_channel::unbounded::<i8>();
-    // TODO: write actual unix socket
+    let (sender, receiver) = async_channel::unbounded::<Volume>();
     glib::spawn_future_local(clone!(@weak label => async move {
-        println!("opening channel");
         while let Ok(volume) = receiver.recv().await {
             match volume {
-                MUTE => {
+                Volume::Mute=> {
                     label.set_label("mute");
                 },
-                _ => {
-                    label.set_label(&format!("{}%", volume));
+                Volume::Unmute(volume)=> {
+                    label.set_label(&format!("VOL {}%", volume));
                 }
             }
 
         }
     }));
-    gio::spawn_blocking(move || {
-        thread::sleep(Duration::from_secs(3));
-        // sender
-        //     .send_blocking(get_volume().expect("couldnt get volume"))
-        //     .expect("couldnt send");
-        match sender.send_blocking(12) {
-            Ok(_) => (),
-            Err(e) => eprintln!("{}", e),
-        };
+    gio::spawn_blocking(move || loop {
+        sender
+            .send_blocking(get_volume().expect("couldnt get volume"))
+            .expect("couldnt send");
+        thread::sleep(Duration::from_secs(2));
     });
+    Ok(())
 }
 
-fn get_volume() -> Result<i8> {
+fn get_volume() -> Result<Volume> {
     let mute = String::from_utf8(
         Command::new("pamixer")
             .args(["--get-mute"])
@@ -53,7 +52,7 @@ fn get_volume() -> Result<i8> {
     )?;
 
     if mute.trim().eq_ignore_ascii_case("true") {
-        return Ok(MUTE);
+        return Ok(Volume::Mute);
     }
 
     let volume = String::from_utf8(
@@ -64,5 +63,6 @@ fn get_volume() -> Result<i8> {
             .stdout,
     )?;
 
-    Ok(volume.trim().parse::<i8>().unwrap())
+    let value = volume.trim().parse::<i8>().unwrap();
+    Ok(Volume::Unmute(value))
 }

@@ -17,21 +17,24 @@ pub fn display_widgets(window: &ApplicationWindow) {
     root.set_widget_name("barbie");
 
     let left = widget();
+    let center = widget();
     let right = widget();
 
     left.set_widget_name("widget");
+    center.set_widget_name("widget");
     right.set_widget_name("widget");
 
     root.add(&left);
+    root.set_center_widget(Some(&center));
     root.pack_end(&right, false, true, 0);
 
     add!(hyprland to left);
     add!(battery to left);
-    match brightness::add_widget(&left) {
-        Ok(_) => (),
-        Err(_) => warn!("couldnt load brightness module"),
-    }
-    add!(sys to right);
+    add!(brightness to left);
+
+    add!(sys to center);
+
+    add!(volume to right);
     add!(clock to right);
 
     window.add(&root);

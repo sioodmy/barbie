@@ -2,8 +2,6 @@
 use gtk::gdk::*;
 use gtk::glib::Propagation;
 use gtk::prelude::*;
-use hyprland::keyword::Keyword;
-use hyprland::shared::HResult;
 
 use gtk::*;
 use gtk_layer_shell::{Edge, Layer, LayerShell};
@@ -11,27 +9,6 @@ use log::info;
 
 mod ui;
 mod widgets;
-
-pub fn build_widgets(window: &ApplicationWindow) {
-    info!("Initializing widgets");
-    let root = Box::new(Orientation::Horizontal, 0);
-    let left = Box::new(Orientation::Horizontal, 0);
-    let centered = Box::new(Orientation::Horizontal, 0);
-    let right = Box::new(Orientation::Horizontal, 0);
-
-    root.set_widget_name("root");
-
-    left.set_widget_name("left");
-    centered.set_widget_name("centered");
-    right.set_widget_name("right");
-
-    root.set_center_widget(Some(&centered));
-    root.pack_end(&right, false, true, 0);
-    root.add(&left);
-    window.add(&root);
-
-    window.show_all();
-}
 
 /// Initializes the status bar.
 fn activate(application: &Application) {
