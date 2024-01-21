@@ -1,6 +1,9 @@
 use anyhow::Result;
+use glib::*;
 use gtk::{traits::*, *};
 use std::fs;
+
+use crate::socket::make_socket;
 
 use super::widget;
 
@@ -31,23 +34,18 @@ pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
     let initial = get_brightness()?;
-    let brightness = Label::new(Some(&initial));
-    brightness.set_widget_name("brightness");
-    widgetbox.add(&brightness);
+    let label = Label::new(Some(&initial));
+    label.set_widget_name("brightness");
+    widgetbox.add(&label);
 
-    let tick = move || {
-        // We can relatively safely use expect, because it should never reutrn
-        // an error in real life scenario, only if you disconnect battery while
-        // using the device (you shouldnt do that tbh).
-        // We don't want to waste resources ticking battery widget for no reason.
-        let brightness_label = get_brightness().expect("failed to update brightness widget");
-        brightness.set_text(&brightness_label);
+    let (sender, receiver) = async_channel::unbounded::<()>();
 
-        // we could return glib::ControlFlow::Break to stop our battery after this tick
-        glib::ControlFlow::Continue
-    };
+    glib::spawn_future_local(clone!(@weak label => async move {
+        while let Ok(()) = receiver.recv().await {
+            label.set_label(&get_brightness().unwrap());
+        }
+    }));
 
-    // executes the closure once every second
-    glib::timeout_add_seconds_local(1, tick);
+    make_socket("bl", sender);
     Ok(())
 }

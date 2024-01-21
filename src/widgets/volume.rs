@@ -1,12 +1,10 @@
 use anyhow::Result;
 use glib::*;
 use gtk::{traits::*, *};
-use log::error;
 
-use std::os::unix::net::{UnixListener};
 use std::process::Command;
 
-
+use crate::socket::make_socket;
 
 use super::widget;
 
@@ -15,49 +13,32 @@ enum Volume {
     Unmute(i8),
 }
 
+fn vol_label(volume: Volume) -> String {
+    match volume {
+        Volume::Mute => String::from("MUTE"),
+        Volume::Unmute(volume) => {
+            format!("VOL {}%", volume)
+        }
+    }
+}
 pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
 
-    let label = Label::new(Some("vol"));
+    let initial = vol_label(get_volume().unwrap());
+    let label = Label::new(Some(&initial));
     widgetbox.add(&label);
     label.set_widget_name("volume");
 
-    let (sender, receiver) = async_channel::unbounded::<Volume>();
+    let (sender, receiver) = async_channel::unbounded::<()>();
 
     glib::spawn_future_local(clone!(@weak label => async move {
-        while let Ok(volume) = receiver.recv().await {
-            match volume {
-                Volume::Mute=> {
-                    label.set_label("mute");
-                },
-                Volume::Unmute(volume)=> {
-                    label.set_label(&format!("VOL {}%", volume));
-                }
-            }
-
+        while let Ok(()) = receiver.recv().await {
+            label.set_label(&vol_label(get_volume().unwrap()))
         }
     }));
-    gio::spawn_blocking(move || loop {
-        let socket = "/tmp/barbie-vol.sock";
-        let _ = std::fs::remove_file(&socket);
 
-        let listener = UnixListener::bind(socket).unwrap();
-
-        for stream in listener.incoming() {
-            match stream {
-                Ok(_) => {
-                    sender
-                        .send_blocking(get_volume().expect("couldnt get volume"))
-                        .expect("couldnt send");
-                }
-                Err(err) => {
-                    error!("Problem while parsing socket data: {}", err);
-                    break;
-                }
-            }
-        }
-    });
+    make_socket("vol", sender);
     Ok(())
 }
 
