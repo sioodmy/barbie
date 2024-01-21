@@ -1,9 +1,12 @@
 use anyhow::Result;
 use glib::*;
 use gtk::{traits::*, *};
+use log::error;
+
+use std::os::unix::net::{UnixListener};
 use std::process::Command;
-use std::thread;
-use std::time::Duration;
+
+
 
 use super::widget;
 
@@ -11,6 +14,7 @@ enum Volume {
     Mute,
     Unmute(i8),
 }
+
 pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
@@ -20,6 +24,7 @@ pub fn add_widget(pos: &Box) -> Result<()> {
     label.set_widget_name("volume");
 
     let (sender, receiver) = async_channel::unbounded::<Volume>();
+
     glib::spawn_future_local(clone!(@weak label => async move {
         while let Ok(volume) = receiver.recv().await {
             match volume {
@@ -34,10 +39,24 @@ pub fn add_widget(pos: &Box) -> Result<()> {
         }
     }));
     gio::spawn_blocking(move || loop {
-        sender
-            .send_blocking(get_volume().expect("couldnt get volume"))
-            .expect("couldnt send");
-        thread::sleep(Duration::from_secs(2));
+        let socket = "/tmp/barbie-vol.sock";
+        let _ = std::fs::remove_file(&socket);
+
+        let listener = UnixListener::bind(socket).unwrap();
+
+        for stream in listener.incoming() {
+            match stream {
+                Ok(_) => {
+                    sender
+                        .send_blocking(get_volume().expect("couldnt get volume"))
+                        .expect("couldnt send");
+                }
+                Err(err) => {
+                    error!("Problem while parsing socket data: {}", err);
+                    break;
+                }
+            }
+        }
     });
     Ok(())
 }
