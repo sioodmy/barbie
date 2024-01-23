@@ -32,9 +32,9 @@ pub fn display_widgets(window: &ApplicationWindow) {
     add!(battery to left);
     add!(brightness to left);
 
-    add!(sys to center);
     add!(clock to center);
 
+    add!(sys to right);
     add!(volume to right);
 
     window.add(&root);

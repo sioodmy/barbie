@@ -1,5 +1,6 @@
 $text: #cdd6f4;
 $base: #1e1e2e;
+$surface0: #313244;
 
 * {
   font-size: 15px;
@@ -10,13 +11,13 @@ $base: #1e1e2e;
 
 #barbie {
   margin: 6px 11px;
+  background: $base;
 }
 
 #widget {
   background: $base;
   border-style: solid;
-  padding: 6px 11px;
-  border-radius: 6px;
+  padding: 11px 11px;
 }
 
 label{
@@ -25,9 +26,4 @@ label{
 
 #face {
   color: $text;
-}
-
-#clock {
-  font-family: "Iosevka Term";
-  font-weight: 700;
 }

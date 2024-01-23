@@ -5,20 +5,24 @@ use gtk::{traits::*, *};
 use super::widget;
 
 fn current_time() -> String {
-    format!("{}", Local::now().format("%H:%M"))
+    Local::now().format("%H:%M").to_string()
+}
+fn current_date() -> String {
+    Local::now().format("%Y-%m-%d").to_string()
 }
 
 pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
-    let clock = Label::new(None);
+    let clock = Label::new(Some(&current_time()));
+    clock.set_tooltip_text(Some(&current_date()));
 
     clock.set_widget_name("clock");
     widgetbox.add(&clock);
 
     let tick = move || {
-        let time = current_time();
-        clock.set_text(&time);
+        clock.set_text(&current_time());
+        clock.set_tooltip_text(Some(&current_date()));
         // we could return glib::ControlFlow::Break to stop our clock after this tick
         glib::ControlFlow::Continue
     };
