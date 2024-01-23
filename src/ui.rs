@@ -33,9 +33,9 @@ pub fn display_widgets(window: &ApplicationWindow) {
     add!(brightness to left);
 
     add!(sys to center);
+    add!(clock to center);
 
     add!(volume to right);
-    add!(clock to right);
 
     window.add(&root);
     window.show_all();

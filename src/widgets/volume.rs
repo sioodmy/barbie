@@ -15,9 +15,13 @@ enum Volume {
 
 fn vol_label(volume: Volume) -> String {
     match volume {
-        Volume::Mute => String::from("MUTE"),
+        Volume::Mute => String::from(" 0%"),
         Volume::Unmute(volume) => {
-            format!("VOL {}%", volume)
+            let icon = match volume {
+                1..=50 => "",
+                51..=100 | _ => "",
+            };
+            format!("{} {}%", icon, volume)
         }
     }
 }

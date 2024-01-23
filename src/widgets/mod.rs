@@ -8,6 +8,6 @@ pub mod sys;
 pub mod volume;
 
 pub fn widget() -> Box {
-    let widgetbox = Box::new(Orientation::Horizontal, 20);
+    let widgetbox = Box::new(Orientation::Horizontal, 25);
     widgetbox
 }
