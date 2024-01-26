@@ -11,24 +11,6 @@ use super::widget;
 
 type Stats = (f32, f32);
 
-macro_rules! pick {
-    ($($x:expr),+ $(,)?) => {
-        vec![$($x),+].choose(&mut rand::thread_rng()).unwrap()
-    };
-}
-fn tamagotchi(cpu: f32) -> String {
-    match cpu as i32 {
-        0..=10 => pick!("( ◕‿◕)", "(◕‿◕ )", "(≧◡≦)"),
-        11..=20 => "(◕‿◕)",
-        21..=30 => "(• ᴗ •)",
-        31..=50 => "(´ー｀)",
-        51..=80 => "(‘-’*)",
-        81..=101 => "(☓‿‿☓)",
-        _ => "a",
-    }
-    .to_string()
-}
-
 pub fn add_widget(pos: &Box) -> Result<()> {
     let widgetbox = widget();
     pos.add(&widgetbox);
@@ -50,9 +32,7 @@ pub fn add_widget(pos: &Box) -> Result<()> {
 
     glib::spawn_future_local(clone!(@weak face=> async move {
         while let Ok((cpu, mem)) = receiver.recv().await {
-            face.set_tooltip_markup(Some(&format!("<b>CPU</b> {:.2}% <b>MEM</b> {:.2}%", cpu, mem)));
-            face.set_label(&tamagotchi(cpu));
-
+            face.set_label(&format!(" {:.2}%    {:.2}%", cpu, mem));
         }
     }));
     Ok(())
