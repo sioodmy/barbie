@@ -19,7 +19,7 @@ fn vol_label(volume: Volume) -> String {
         Volume::Unmute(volume) => {
             let icon = match volume {
                 1..=50 => "",
-                51..=100 | _ => "",
+                _ => "",
             };
             format!("{} {}%", icon, volume)
         }

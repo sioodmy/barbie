@@ -2,7 +2,7 @@ use anyhow::Result;
 use core::f32;
 use glib::*;
 use gtk::{traits::*, *};
-use rand::prelude::SliceRandom;
+
 use std::thread;
 use std::time::Duration;
 use systemstat::{Platform, System};
