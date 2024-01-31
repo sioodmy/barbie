@@ -42,7 +42,11 @@ pub fn add_widget(pos: &Box) -> Result<()> {
 
     glib::spawn_future_local(clone!(@weak label => async move {
         while let Ok(()) = receiver.recv().await {
-            label.set_label(&get_brightness().unwrap());
+            if let Ok(brightness) = get_brightness() {
+                label.set_label(&brightness)
+            } else {
+                warn!("Could't get brightness value");
+            }
         }
     }));
 

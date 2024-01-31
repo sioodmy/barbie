@@ -1,6 +1,7 @@
 use anyhow::Result;
 use glib::*;
 use gtk::{traits::*, *};
+use log::warn;
 
 use std::process::Command;
 
@@ -38,7 +39,11 @@ pub fn add_widget(pos: &Box) -> Result<()> {
 
     glib::spawn_future_local(clone!(@weak label => async move {
         while let Ok(()) = receiver.recv().await {
-            label.set_label(&vol_label(get_volume().unwrap()))
+            if let Ok(volume) = get_volume() {
+                label.set_label(&volume)
+            } else {
+                warn!("Could't get volume value");
+            }
         }
     }));
 
@@ -67,6 +72,6 @@ fn get_volume() -> Result<Volume> {
             .stdout,
     )?;
 
-    let value = volume.trim().parse::<i8>().unwrap();
+    let value = volume.trim().parse::<i8>()?;
     Ok(Volume::Unmute(value))
 }
