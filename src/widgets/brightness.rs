@@ -1,6 +1,7 @@
 use anyhow::Result;
 use glib::*;
 use gtk::{traits::*, *};
+use log::warn;
 use std::fs;
 
 use crate::socket::make_socket;

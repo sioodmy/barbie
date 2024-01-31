@@ -40,7 +40,7 @@ pub fn add_widget(pos: &Box) -> Result<()> {
     glib::spawn_future_local(clone!(@weak label => async move {
         while let Ok(()) = receiver.recv().await {
             if let Ok(volume) = get_volume() {
-                label.set_label(&volume)
+                label.set_label(&vol_label(volume))
             } else {
                 warn!("Could't get volume value");
             }
